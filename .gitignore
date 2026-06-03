@@ -71,4 +71,5 @@ backend/data/*.db
 # ─── Local documentation ────────────────────────────────────
 description.md
 start.md
+structure.md
 

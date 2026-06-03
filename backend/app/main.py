@@ -5,7 +5,7 @@ from app.api import agent, auth, ingest, insights, process, simulate
 from app.config import settings
 from app.db import init_db
 
-app = FastAPI(title="Fiserv Agent", version="0.1.0")
+app = FastAPI(title="Pulse PFS", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,4 +30,4 @@ def _startup() -> None:
 
 @app.get("/api/health")
 def health() -> dict:
-    return {"status": "ok", "service": "fiserv-agent"}
+    return {"status": "ok", "service": "pulse-pfs"}

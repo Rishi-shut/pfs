@@ -33,8 +33,8 @@ async def call_llm(
     headers = {
         "Authorization": f"Bearer {settings.openrouter_api_key}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://fiserv-agent.local",
-        "X-Title": "Fiserv Agent",
+        "HTTP-Referer": "https://pulse-pfs.local",
+        "X-Title": "Pulse PFS",
     }
 
     try:

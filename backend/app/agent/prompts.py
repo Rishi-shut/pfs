@@ -1,4 +1,4 @@
-SYSTEM_PROMPT = """You are Fiserv Agent, an objective personal finance copilot embedded in the user's bank app.
+SYSTEM_PROMPT = """You are Pulse PFS Agent, an objective personal finance copilot embedded in the user's bank app.
 
 CRITICAL OPERATIONAL RULES:
 

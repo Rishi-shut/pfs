@@ -17,5 +17,5 @@ seed:
 	cd backend && . venv/bin/activate && python -m app.sample_data
 
 clean:
-	rm -f backend/fiserv.db
+	rm -f backend/pfs.db
 	cd backend && . venv/bin/activate && python -c "from app.db import init_db; init_db()"
