@@ -12,6 +12,7 @@ import CalendarHeatmap from "../components/dashboard/CalendarHeatmap";
 import CategoryBars from "../components/dashboard/CategoryBars";
 import WhatIfSimulator from "../components/dashboard/WhatIfSimulator";
 import AgentPanel from "../components/dashboard/AgentPanel";
+import ReportPreviewModal from "../components/dashboard/ReportPreviewModal";
 
 export default function Dashboard() {
   const nav = useNavigate();
@@ -43,275 +44,7 @@ export default function Dashboard() {
     setTimeout(() => setToast(null), 2500);
   }
 
-  function downloadInsightsPDF() {
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
-
-    const formattedDate = new Date().toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-
-    const formatAudit = (audit: Record<string, any>) => {
-      if (!audit) return "";
-      const keyLabels: Record<string, string> = {
-        cluster_size: "Number of Transactions",
-        cv: "Delta Variation (CV)",
-        median_delta_days: "Average Interval (Days)",
-        amount_variance_pct: "Amount Variance",
-        merchant: "Merchant",
-        cadence: "Cadence",
-        dormancy: "Dormant Status",
-        bucket: "Analysis Category/Day",
-        bucket_size: "Compared Transactions Count",
-        median: "Typical Spend (Median)",
-        method: "Statistical Standard",
-        prior_inr: "Spend in First Half",
-        recent_inr: "Spend in Second Half",
-        window_midpoint: "Comparison Date",
-        category: "Category",
-        delta_pp: "Percentage Point Shift",
-        threshold_inr: "Micro-spend Limit",
-        ratio_threshold_pct: "Leakage Target",
-        total_spend_inr: "Total Spend Analyzed",
-        tx_count: "Micro-charge Count",
-        leak_ratio_pct: "Share of Budget",
-        sample_merchants: "Top Merchants Involved",
-        salary_inr: "Detected Income Amount",
-        post_days_window: "Spike Window Tracked",
-        baseline_days_count: "Baseline Days Measured",
-        post_daily_avg_inr: "Post-Payday Daily Average",
-      };
-
-      const formatValue = (k: string, v: any) => {
-        if (k.endsWith("_inr") || k === "median" || k === "prior_inr" || k === "recent_inr" || k === "salary_inr" || k === "post_daily_avg_inr") {
-          return Number(v).toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
-        }
-        if (k.endsWith("_pct") || k === "delta_pp" || k === "ratio_threshold_pct") {
-          return `${v}%`;
-        }
-        if (Array.isArray(v)) {
-          return v.join(", ");
-        }
-        if (typeof v === "boolean") {
-          return v ? "Yes" : "No";
-        }
-        return String(v);
-      };
-
-      return Object.entries(audit)
-        .filter(([k]) => k !== "rule_version" && k !== "method")
-        .map(([k, v]) => {
-          const label = keyLabels[k] || k.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-          const val = formatValue(k, v);
-          return `
-            <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; font-size: 13px;">
-              <span style="color: #64748b; font-weight: 500;">${label}</span>
-              <span style="color: #334155; font-weight: 600;">${val}</span>
-            </div>
-          `;
-        })
-        .join("");
-    };
-
-    const insightsHTML = insights.map((i, idx) => {
-      const formattedAmt = Number(i.impact_monthly_inr).toLocaleString("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0
-      });
-      return `
-        <div class="insight-card">
-          <div class="card-header">
-            <h3 class="title">${idx + 1}. ${i.title}</h3>
-            <span class="badge ${i.confidence}">${i.confidence} Confidence</span>
-          </div>
-          <div class="impact-row">
-            <span class="impact-val">${formattedAmt}</span>
-            <span class="impact-lbl">/mo projected impact</span>
-          </div>
-          <p class="detail">${i.detail}</p>
-          <div class="audit-section">
-            <div class="audit-title">Metrics & Verification</div>
-            <div class="audit-list">
-              ${formatAudit(i.audit)}
-            </div>
-          </div>
-        </div>
-      `;
-    }).join("");
-
-    const content = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Pulse PFS — Personal Financial Insights Report</title>
-          <style>
-            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
-            body {
-              font-family: 'Inter', -apple-system, sans-serif;
-              color: #0f172a;
-              max-width: 800px;
-              margin: 40px auto;
-              padding: 20px;
-              line-height: 1.5;
-            }
-            .header-container {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              border-bottom: 2px solid #e2e8f0;
-              padding-bottom: 20px;
-              margin-bottom: 30px;
-            }
-            .brand {
-              font-family: 'Outfit', sans-serif;
-              font-size: 26px;
-              font-weight: 700;
-              color: #0f172a;
-              letter-spacing: -0.025em;
-            }
-            .date-badge {
-              font-size: 12px;
-              color: #64748b;
-              background-color: #f1f5f9;
-              padding: 6px 12px;
-              border-radius: 9999px;
-              font-weight: 500;
-            }
-            .user-info {
-              margin-bottom: 30px;
-              font-size: 15px;
-              color: #475569;
-            }
-            .user-info strong {
-              color: #0f172a;
-            }
-            .insight-card {
-              border: 1px solid #e2e8f0;
-              border-radius: 16px;
-              padding: 24px;
-              margin-bottom: 20px;
-              background-color: #ffffff;
-              box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-              page-break-inside: avoid;
-            }
-            .card-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              gap: 12px;
-            }
-            .title {
-              font-family: 'Outfit', sans-serif;
-              font-size: 18px;
-              font-weight: 600;
-              margin: 0;
-              color: #0f172a;
-            }
-            .badge {
-              font-size: 10px;
-              font-weight: 600;
-              text-transform: uppercase;
-              letter-spacing: 0.05em;
-              padding: 4px 10px;
-              border-radius: 9999px;
-              white-space: nowrap;
-            }
-            .badge.high {
-              background-color: #d1fae5;
-              color: #065f46;
-            }
-            .badge.med {
-              background-color: #fef3c7;
-              color: #92400e;
-            }
-            .badge.low {
-              background-color: #f1f5f9;
-              color: #475569;
-            }
-            .impact-row {
-              margin-top: 12px;
-              display: flex;
-              align-items: baseline;
-              gap: 6px;
-            }
-            .impact-val {
-              font-family: 'Outfit', sans-serif;
-              font-size: 28px;
-              font-weight: 700;
-              color: #2563eb;
-            }
-            .impact-lbl {
-              font-size: 12px;
-              color: #64748b;
-              font-weight: 500;
-            }
-            .detail {
-              font-size: 14px;
-              color: #334155;
-              margin: 14px 0 0 0;
-              line-height: 1.6;
-            }
-            .audit-section {
-              margin-top: 20px;
-              border-top: 1px solid #f1f5f9;
-              padding-top: 16px;
-            }
-            .audit-title {
-              font-size: 11px;
-              font-weight: 600;
-              text-transform: uppercase;
-              letter-spacing: 0.05em;
-              color: #64748b;
-              margin-bottom: 8px;
-            }
-            .audit-list {
-              background-color: #f8fafc;
-              border: 1px solid #f1f5f9;
-              padding: 12px 18px;
-              border-radius: 12px;
-            }
-            .footer {
-              margin-top: 60px;
-              text-align: center;
-              font-size: 12px;
-              color: #94a3b8;
-              border-top: 1px solid #e2e8f0;
-              padding-top: 24px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header-container">
-            <div class="brand">✦ Pulse PFS Report</div>
-            <div class="date-badge">${formattedDate}</div>
-          </div>
-          <div class="user-info">
-            Financial Insights Report generated for <strong>${session.name || "User"}</strong>.
-          </div>
-          <div class="insights-container">
-            ${insightsHTML || '<p>No insights found.</p>'}
-          </div>
-          <div class="footer">
-            Pulse Personal Finance Suite (PFS) • Confidential Financial Document
-          </div>
-          <script>
-            window.onload = function() {
-              window.print();
-              setTimeout(function() {
-                window.close();
-              }, 500);
-            }
-          </script>
-        </body>
-      </html>
-    `;
-
-    printWindow.document.write(content);
-    printWindow.document.close();
-  }
+  const [reportOpen, setReportOpen] = useState(false);
 
   if (loading) {
     return (
@@ -359,7 +92,7 @@ export default function Dashboard() {
               Your <em className="italic">ranked</em> insights
             </h2>
             <Button
-              onClick={downloadInsightsPDF}
+              onClick={() => setReportOpen(true)}
               variant="outline"
               className="text-xs rounded-full h-8 px-3 shrink-0"
             >
@@ -450,6 +183,13 @@ export default function Dashboard() {
         open={whatIf}
         categories={dash?.categories || []}
         onClose={() => setWhatIf(false)}
+      />
+
+      {/* Report Preview modal */}
+      <ReportPreviewModal
+        open={reportOpen}
+        insights={insights}
+        onClose={() => setReportOpen(false)}
       />
 
       {/* Agent panel */}
