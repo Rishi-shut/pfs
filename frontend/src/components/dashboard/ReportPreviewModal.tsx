@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Download, ShieldCheck } from "lucide-react";
+// @ts-ignore
+import html2pdf from "html2pdf.js";
 import { session } from "../../lib/session";
 import { formatINR } from "../../lib/utils";
 import { Button } from "../ui/button";
@@ -65,234 +67,19 @@ export default function ReportPreviewModal({
     return String(v);
   };
 
-  const handlePrint = () => {
-    let iframe = document.getElementById("report-print-iframe") as HTMLIFrameElement | null;
-    if (!iframe) {
-      iframe = document.createElement("iframe");
-      iframe.id = "report-print-iframe";
-      iframe.style.position = "fixed";
-      iframe.style.right = "0";
-      iframe.style.bottom = "0";
-      iframe.style.width = "0";
-      iframe.style.height = "0";
-      iframe.style.border = "none";
-      document.body.appendChild(iframe);
-    }
+  const handleDownload = () => {
+    const element = document.getElementById("report-sheet");
+    if (!element) return;
 
-    const formatAuditHTML = (audit: Record<string, any>) => {
-      if (!audit) return "";
-      return Object.entries(audit)
-        .filter(([k]) => k !== "rule_version" && k !== "method")
-        .map(([k, v]) => {
-          const label = KEY_LABELS[k] || k.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-          const val = formatValue(k, v);
-          return `
-            <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; font-size: 13px;">
-              <span style="color: #64748b; font-weight: 500;">${label}</span>
-              <span style="color: #334155; font-weight: 600;">${val}</span>
-            </div>
-          `;
-        })
-        .join("");
+    const opt = {
+      margin:       0.3,
+      filename:     `Pulse_PFS_Report_${session.name || "User"}.pdf`,
+      image:        { type: "jpeg" as const, quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: "in" as const, format: "letter" as const, orientation: "portrait" as const }
     };
 
-    const insightsHTML = insights.map((i, idx) => {
-      const formattedAmt = Number(i.impact_monthly_inr).toLocaleString("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0
-      });
-      return `
-        <div class="insight-card">
-          <div class="card-header">
-            <h3 class="title">${idx + 1}. ${i.title}</h3>
-            <span class="badge ${i.confidence}">${i.confidence} Confidence</span>
-          </div>
-          <div class="impact-row">
-            <span class="impact-val">${formattedAmt}</span>
-            <span class="impact-lbl">/mo projected impact</span>
-          </div>
-          <p class="detail">${i.detail}</p>
-          <div class="audit-section">
-            <div class="audit-title">Metrics & Verification</div>
-            <div class="audit-list">
-              ${formatAuditHTML(i.audit)}
-            </div>
-          </div>
-        </div>
-      `;
-    }).join("");
-
-    const content = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Pulse PFS — Personal Financial Insights Report</title>
-          <style>
-            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
-            body {
-              font-family: 'Inter', -apple-system, sans-serif;
-              color: #0f172a;
-              max-width: 800px;
-              margin: 40px auto;
-              padding: 20px;
-              line-height: 1.5;
-            }
-            .header-container {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              border-bottom: 2px solid #e2e8f0;
-              padding-bottom: 20px;
-              margin-bottom: 30px;
-            }
-            .brand {
-              font-family: 'Outfit', sans-serif;
-              font-size: 26px;
-              font-weight: 700;
-              color: #0f172a;
-              letter-spacing: -0.025em;
-            }
-            .date-badge {
-              font-size: 12px;
-              color: #64748b;
-              background-color: #f1f5f9;
-              padding: 6px 12px;
-              border-radius: 9999px;
-              font-weight: 500;
-            }
-            .user-info {
-              margin-bottom: 30px;
-              font-size: 15px;
-              color: #475569;
-            }
-            .user-info strong {
-              color: #0f172a;
-            }
-            .insight-card {
-              border: 1px solid #e2e8f0;
-              border-radius: 16px;
-              padding: 24px;
-              margin-bottom: 20px;
-              background-color: #ffffff;
-              box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-              page-break-inside: avoid;
-            }
-            .card-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              gap: 12px;
-            }
-            .title {
-              font-family: 'Outfit', sans-serif;
-              font-size: 18px;
-              font-weight: 600;
-              margin: 0;
-              color: #0f172a;
-            }
-            .badge {
-              font-size: 10px;
-              font-weight: 600;
-              text-transform: uppercase;
-              letter-spacing: 0.05em;
-              padding: 4px 10px;
-              border-radius: 9999px;
-              white-space: nowrap;
-            }
-            .badge.high {
-              background-color: #d1fae5;
-              color: #065f46;
-            }
-            .badge.med {
-              background-color: #fef3c7;
-              color: #92400e;
-            }
-            .badge.low {
-              background-color: #f1f5f9;
-              color: #475569;
-            }
-            .impact-row {
-              margin-top: 12px;
-              display: flex;
-              align-items: baseline;
-              gap: 6px;
-            }
-            .impact-val {
-              font-family: 'Outfit', sans-serif;
-              font-size: 28px;
-              font-weight: 700;
-              color: #2563eb;
-            }
-            .impact-lbl {
-              font-size: 12px;
-              color: #64748b;
-              font-weight: 500;
-            }
-            .detail {
-              font-size: 14px;
-              color: #334155;
-              margin: 14px 0 0 0;
-              line-height: 1.6;
-            }
-            .audit-section {
-              margin-top: 20px;
-              border-top: 1px solid #f1f5f9;
-              padding-top: 16px;
-            }
-            .audit-title {
-              font-size: 11px;
-              font-weight: 600;
-              text-transform: uppercase;
-              letter-spacing: 0.05em;
-              color: #64748b;
-              margin-bottom: 8px;
-            }
-            .audit-list {
-              background-color: #f8fafc;
-              border: 1px solid #f1f5f9;
-              padding: 12px 18px;
-              border-radius: 12px;
-            }
-            .footer {
-              margin-top: 60px;
-              text-align: center;
-              font-size: 12px;
-              color: #94a3b8;
-              border-top: 1px solid #e2e8f0;
-              padding-top: 24px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header-container">
-            <div class="brand">✦ Pulse PFS Report</div>
-            <div class="date-badge">${formattedDate}</div>
-          </div>
-          <div class="user-info">
-            Financial Insights Report generated for <strong>${session.name || "User"}</strong>.
-          </div>
-          <div class="insights-container">
-            ${insightsHTML || '<p>No insights found.</p>'}
-          </div>
-          <div class="footer">
-            Pulse Personal Finance Suite (PFS) • Confidential Financial Document
-          </div>
-        </body>
-      </html>
-    `;
-
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (iframeDoc) {
-      iframeDoc.open();
-      iframeDoc.write(content);
-      iframeDoc.close();
-
-      setTimeout(() => {
-        iframe.contentWindow?.focus();
-        iframe.contentWindow?.print();
-      }, 500);
-    }
+    html2pdf().set(opt).from(element).save();
   };
 
   if (!open) return null;
@@ -320,7 +107,7 @@ export default function ReportPreviewModal({
               <p className="text-xs text-muted-foreground">Verify the generated report below before saving as PDF.</p>
             </div>
             <div className="flex items-center gap-2">
-              <Button onClick={handlePrint} className="rounded-full px-4 py-2 text-xs font-semibold gap-1.5 h-9">
+              <Button onClick={handleDownload} className="rounded-full px-4 py-2 text-xs font-semibold gap-1.5 h-9">
                 <Download className="h-3.5 w-3.5" /> Download PDF
               </Button>
               <button onClick={onClose} className="p-2 hover:bg-secondary rounded-full transition">
@@ -332,7 +119,7 @@ export default function ReportPreviewModal({
           {/* Sheet Preview Container (scrollable) */}
           <div className="flex-1 overflow-y-auto p-8 flex justify-center bg-muted/40">
             {/* The Sheet */}
-            <div className="w-full max-w-[800px] bg-background border border-border rounded-xl shadow-lg p-10 text-left text-foreground select-text font-body leading-relaxed flex flex-col min-h-[1050px]">
+            <div id="report-sheet" className="w-full max-w-[800px] bg-background border border-border rounded-xl shadow-lg p-10 text-left text-foreground select-text font-body leading-relaxed flex flex-col min-h-[1050px]">
               {/* Header inside sheet */}
               <div className="flex justify-between items-center border-b-2 border-muted pb-4 mb-6">
                 <div className="font-display text-2xl font-bold tracking-tight text-foreground flex items-center gap-1.5">
