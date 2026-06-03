@@ -79,7 +79,7 @@ export default function AgentPanel({
             <div className="flex items-center justify-between p-4 border-b border-border">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-accent" />
-                <h2 className="font-semibold">Fiserv Agent</h2>
+                <h2 className="font-semibold">Pulse PFS Agent</h2>
               </div>
               <button onClick={onClose} className="p-1 hover:bg-secondary rounded">
                 <X className="h-4 w-4" />

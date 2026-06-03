@@ -1,5 +1,5 @@
-const KEY_SID = "fiserv.session_id";
-const KEY_NAME = "fiserv.user_name";
+const KEY_SID = "pfs.session_id";
+const KEY_NAME = "pfs.user_name";
 
 export const session = {
   get id(): string | null {

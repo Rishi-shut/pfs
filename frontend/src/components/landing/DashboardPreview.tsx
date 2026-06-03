@@ -15,8 +15,8 @@ export default function DashboardPreview() {
           {/* Top bar */}
           <div className="flex items-center gap-3 px-3 py-2 border-b border-border bg-background">
             <div className="flex items-center gap-1.5">
-              <div className="h-5 w-5 rounded-md bg-foreground text-background grid place-items-center text-[10px] font-semibold">F</div>
-              <span className="font-semibold text-foreground">Fiserv Agent</span>
+              <div className="h-5 w-5 rounded-md bg-foreground text-background grid place-items-center text-[10px] font-semibold">P</div>
+              <span className="font-semibold text-foreground">Pulse PFS</span>
               <ChevronDown className="h-3 w-3 text-muted-foreground" />
             </div>
             <div className="flex-1 max-w-sm mx-auto flex items-center gap-2 rounded-md bg-secondary px-2.5 py-1">

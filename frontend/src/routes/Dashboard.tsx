@@ -67,7 +67,7 @@ export default function Dashboard() {
       {/* Top bar */}
       <header className="bg-background border-b border-border px-6 lg:px-12 py-4 flex items-center justify-between">
         <Link to="/" className="text-lg font-semibold tracking-tight">
-          ✦ Fiserv Agent
+          ✦ Pulse PFS
         </Link>
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground">Hi, {session.name}</span>
@@ -174,7 +174,7 @@ export default function Dashboard() {
         className="fixed bottom-6 right-6 z-30 rounded-full bg-foreground text-background h-12 px-5 shadow-lg hover:opacity-90 flex items-center gap-2 text-sm font-medium"
       >
         <MessageSquare className="h-4 w-4" />
-        Ask Fiserv Agent
+        Ask Pulse PFS
         <Sparkles className="h-3 w-3 text-accent" />
       </button>
 

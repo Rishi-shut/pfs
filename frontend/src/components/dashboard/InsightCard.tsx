@@ -109,7 +109,7 @@ export default function InsightCard({
 {JSON.stringify(insight.audit, null, 2)}
           </pre>
           <p className="mt-2 text-[10px] text-muted-foreground italic">
-            Every recommendation is auditable. That's how a Fiserv-grade PFM ships to regulators.
+            Every recommendation is auditable. That's how a Pulse-grade PFS ships to regulators.
           </p>
         </motion.div>
       )}
