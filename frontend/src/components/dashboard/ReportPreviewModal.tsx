@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Download, ShieldCheck } from "lucide-react";
+import { X, Download, ShieldCheck, Activity } from "lucide-react";
 // @ts-ignore
 import html2pdf from "html2pdf.js";
 import { session } from "../../lib/session";
@@ -72,11 +72,11 @@ export default function ReportPreviewModal({
     if (!element) return;
 
     const opt = {
-      margin:       0.3,
-      filename:     `Pulse_PFS_Report_${session.name || "User"}.pdf`,
-      image:        { type: "jpeg" as const, quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, logging: false },
-      jsPDF:        { unit: "in" as const, format: "letter" as const, orientation: "portrait" as const }
+      margin: 0.3,
+      filename: `Pulse_PFS_Report_${session.name || "User"}.pdf`,
+      image: { type: "jpeg" as const, quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: "in" as const, format: "letter" as const, orientation: "portrait" as const }
     };
 
     html2pdf().set(opt).from(element).save();
@@ -122,8 +122,8 @@ export default function ReportPreviewModal({
             <div id="report-sheet" className="w-full max-w-[800px] bg-background border border-border rounded-xl shadow-lg p-10 text-left text-foreground select-text font-body leading-relaxed flex flex-col min-h-[1050px]">
               {/* Header inside sheet */}
               <div className="flex justify-between items-center border-b-2 border-muted pb-4 mb-6">
-                <div className="font-display text-2xl font-bold tracking-tight text-foreground flex items-center gap-1.5">
-                  ✦ Pulse PFS Report
+                <div className="font-display text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                  <Activity className="h-6 w-6 text-accent" /> Pulse PFS Report
                 </div>
                 <div className="text-xs font-semibold text-muted-foreground bg-secondary px-3 py-1.5 rounded-full">
                   {formattedDate}
@@ -146,11 +146,10 @@ export default function ReportPreviewModal({
                         <h3 className="font-display text-lg font-semibold text-foreground">
                           {idx + 1}. {i.title}
                         </h3>
-                        <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                          i.confidence === "high" ? "bg-emerald-100 text-emerald-700" :
-                          i.confidence === "med" ? "bg-amber-100 text-amber-700" :
-                          "bg-secondary text-muted-foreground"
-                        }`}>
+                        <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${i.confidence === "high" ? "bg-emerald-100 text-emerald-700" :
+                            i.confidence === "med" ? "bg-amber-100 text-amber-700" :
+                              "bg-secondary text-muted-foreground"
+                          }`}>
                           {i.confidence} Confidence
                         </span>
                       </div>

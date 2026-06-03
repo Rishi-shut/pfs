@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LogOut, MessageSquare, Sparkles } from "lucide-react";
+import { LogOut, MessageSquare, Sparkles, Activity } from "lucide-react";
 import { api } from "../lib/api";
 import { session } from "../lib/session";
 import type { DashboardData, Insight } from "../types";
@@ -66,8 +66,8 @@ export default function Dashboard() {
     <div className="min-h-screen bg-secondary/30">
       {/* Top bar */}
       <header className="bg-background border-b border-border px-6 lg:px-12 py-4 flex items-center justify-between">
-        <Link to="/" className="text-lg font-semibold tracking-tight">
-          ✦ Pulse PFS
+        <Link to="/" className="text-lg font-semibold tracking-tight flex items-center gap-2">
+          <Activity className="h-5 w-5 text-accent animate-pulse" /> Pulse PFS
         </Link>
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground">Hi, {session.name}</span>

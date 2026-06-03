@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Activity } from "lucide-react";
 import { Button } from "../ui/button";
 
 const links = [
@@ -11,8 +12,8 @@ const links = [
 export default function Navbar() {
   return (
     <header className="relative z-20 flex items-center justify-between px-6 md:px-12 lg:px-20 py-5 font-body">
-      <Link to="/" className="text-xl font-semibold tracking-tight text-foreground">
-        ✦ Pulse PFS
+      <Link to="/" className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
+        <Activity className="h-5 w-5 text-accent animate-pulse" /> Pulse PFS
       </Link>
 
       <nav className="hidden md:flex items-center gap-8">
