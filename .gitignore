@@ -67,3 +67,8 @@ logs/
 # ─── Local data (uploads) ───────────────────────────────────
 backend/uploads/
 backend/data/*.db
+
+# ─── Local documentation ────────────────────────────────────
+description.md
+start.md
+
