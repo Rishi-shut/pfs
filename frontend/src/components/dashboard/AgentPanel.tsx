@@ -121,24 +121,7 @@ export default function AgentPanel({
                     <div className="bg-secondary text-foreground rounded-2xl rounded-bl-sm px-3 py-2 text-sm max-w-[85%]">
                       {m.content}
                     </div>
-                    {m.proposalIds && m.proposalIds.length > 0 && (
-                      <div className="border border-accent/30 bg-accent/5 rounded-xl p-3 max-w-[85%]">
-                        <p className="text-xs text-muted-foreground mb-2">
-                          Proposal awaiting confirmation:
-                        </p>
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => m.proposalIds && m.proposalIds[0] && api.confirmProposal(m.proposalIds[0])}
-                            className="text-xs h-7 rounded-full px-3"
-                          >
-                            Confirm
-                          </Button>
-                          <Button variant="ghost" className="text-xs h-7 rounded-full px-3">
-                            Dismiss
-                          </Button>
-                        </div>
-                      </div>
-                    )}
+
                   </div>
                 ),
               )}

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Activity } from "lucide-react";
 import { Button } from "../ui/button";
 
@@ -10,6 +10,24 @@ const links = [
 ];
 
 export default function Navbar() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, to: string) => {
+    if (to.startsWith("#")) {
+      e.preventDefault();
+      const targetId = to.substring(1);
+      
+      if (location.pathname === "/") {
+        const el = document.getElementById(targetId);
+        el?.scrollIntoView({ behavior: "smooth" });
+      } else {
+        // Navigate to home first, then scroll
+        navigate("/", { state: { scrollTo: targetId } });
+      }
+    }
+  };
+
   return (
     <header className="relative z-20 flex items-center justify-between px-6 md:px-12 lg:px-20 py-5 font-body">
       <Link to="/" className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
@@ -21,6 +39,7 @@ export default function Navbar() {
           <Link
             key={l.label}
             to={l.to}
+            onClick={(e) => handleLinkClick(e, l.to)}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             {l.label}

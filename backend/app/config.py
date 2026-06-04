@@ -2,8 +2,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    openrouter_api_key: str = ""
-    openrouter_model: str = "google/gemini-3.5-flash"
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-flash-latest"
     database_url: str = "sqlite:///./pfs.db"
     allowed_origins: str = "http://localhost:5173"
 

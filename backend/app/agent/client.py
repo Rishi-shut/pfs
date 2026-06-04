@@ -1,5 +1,5 @@
 """
-OpenRouter HTTP client. Wraps the chat-completions endpoint with optional
+Gemini OpenAI-compatible HTTP client. Wraps the chat-completions endpoint with optional
 function-calling. Returns a dict; on transport/HTTP failure returns
 {"_fallback": True, "error": str}.
 """
@@ -10,7 +10,7 @@ from typing import Optional
 
 from app.config import settings
 
-OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
 
 
 async def call_llm(
@@ -18,11 +18,11 @@ async def call_llm(
     tools: Optional[list] = None,
     temperature: float = 0.3,
 ) -> dict:
-    if not settings.openrouter_api_key:
-        return {"_fallback": True, "error": "OPENROUTER_API_KEY not configured"}
+    if not settings.gemini_api_key:
+        return {"_fallback": True, "error": "GEMINI_API_KEY not configured"}
 
     payload: dict = {
-        "model": settings.openrouter_model,
+        "model": settings.gemini_model,
         "messages": messages,
         "temperature": temperature,
     }
@@ -31,15 +31,13 @@ async def call_llm(
         payload["tool_choice"] = "auto"
 
     headers = {
-        "Authorization": f"Bearer {settings.openrouter_api_key}",
+        "Authorization": f"Bearer {settings.gemini_api_key}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://pulse-pfs.local",
-        "X-Title": "Pulse PFS",
     }
 
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
-            r = await client.post(OPENROUTER_URL, headers=headers, json=payload)
+            r = await client.post(GEMINI_URL, headers=headers, json=payload)
             r.raise_for_status()
             return r.json()
     except httpx.HTTPStatusError as e:
