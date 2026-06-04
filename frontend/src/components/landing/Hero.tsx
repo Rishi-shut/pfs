@@ -28,7 +28,7 @@ export default function Hero() {
           transition={{ duration: 0.5 }}
           className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-4 py-1.5 text-sm text-muted-foreground font-body"
         >
-          Powered by Gemini 3.5 Flash ✨
+          Powered by Groq ✨
         </motion.div>
 
         <motion.h1

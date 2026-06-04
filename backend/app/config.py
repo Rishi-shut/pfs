@@ -2,8 +2,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    gemini_api_key: str = ""
-    gemini_model: str = "gemini-flash-latest"
+    groq_api_key: str = ""
+    groq_model: str = "llama-3.3-70b-versatile"
     database_url: str = "sqlite:///./pfs.db"
     allowed_origins: str = "http://localhost:5173"
 
