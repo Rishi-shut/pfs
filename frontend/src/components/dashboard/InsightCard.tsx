@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import type { Insight } from "../../types";
 import { formatINR } from "../../lib/utils";
@@ -45,14 +45,30 @@ export default function InsightCard({
 }) {
   const [open, setOpen] = useState(false);
   const [actioned, setActioned] = useState(false);
+  const [floatingCoin, setFloatingCoin] = useState(false);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
-      className="rounded-2xl border border-border bg-background p-5 shadow-sm hover:shadow-md transition"
+      className="relative rounded-2xl border border-border bg-background p-5 shadow-sm hover:shadow-md transition"
     >
+      <AnimatePresence>
+        {floatingCoin && (
+          <motion.div
+            initial={{ opacity: 1, y: 0, x: "-50%", scale: 1 }}
+            animate={{ opacity: 0, y: -100, x: "50%", scale: 2 }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+            onAnimationComplete={() => setFloatingCoin(false)}
+            className="absolute z-50 text-4xl pointer-events-none"
+            style={{ left: "50%", top: "30%" }}
+          >
+            💰
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex items-start justify-between gap-3">
         <h3 className="text-lg leading-snug text-foreground">{highlightVerb(insight.title)}</h3>
         <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${CONF_STYLES[insight.confidence] || ""}`}>
@@ -74,6 +90,7 @@ export default function InsightCard({
           <Button
             onClick={() => {
               setActioned(true);
+              setFloatingCoin(true);
               onAction?.(insight);
             }}
             disabled={actioned}

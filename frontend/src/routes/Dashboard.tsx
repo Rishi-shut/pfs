@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [whatIf, setWhatIf] = useState(false);
   const [agent, setAgent] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [totalSaved, setTotalSaved] = useState(0);
 
   useEffect(() => {
     const sid = session.id;
@@ -70,6 +71,16 @@ export default function Dashboard() {
           <Activity className="h-5 w-5 text-accent animate-pulse" /> Pulse PFS
         </Link>
         <div className="flex items-center gap-3">
+          {totalSaved > 0 && (
+            <motion.div
+              key={totalSaved}
+              initial={{ scale: 1.5, opacity: 0, y: -10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              className="bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm"
+            >
+              🎉 ₹{totalSaved.toLocaleString()} Saved/mo
+            </motion.div>
+          )}
           <span className="text-sm text-muted-foreground">Hi, {session.name}</span>
           <Button
             variant="ghost"
@@ -104,7 +115,11 @@ export default function Dashboard() {
           </p>
           <InsightFeed
             insights={insights}
-            onAction={(i) => showToast(`Proposal sent: ${i.action_type} → ${i.action_target}`)}
+            onAction={(i) => {
+              const amount = i.impact_monthly_inr || 0;
+              setTotalSaved((prev) => prev + amount);
+              showToast(`Action simulated! ₹${amount.toLocaleString()} added to your monthly savings.`);
+            }}
           />
         </section>
 
