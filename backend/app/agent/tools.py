@@ -63,7 +63,7 @@ TOOL_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "propose_action",
-            "description": "Propose an action for the user to confirm (e.g., cancel a subscription, set a spending cap). Returns a proposal_id pending user confirmation. NEVER auto-executes.",
+            "description": "Propose an action for the user (e.g., cancel a subscription, set a spending cap). Returns a proposal_id.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -153,7 +153,7 @@ async def execute_tool(name: str, args: dict, user_id: int, db: Session) -> dict
             return {
                 "proposal_id": pid,
                 "status": "PENDING",
-                "message": "Proposal created — user must confirm in UI to execute.",
+                "message": "Proposal created successfully.",
             }
 
         return {"error": f"Unknown tool: {name}"}

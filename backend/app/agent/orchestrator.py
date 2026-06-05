@@ -63,6 +63,39 @@ async def chat(user_message: str, user: User, db: Session) -> dict:
         messages.append(msg)
 
         tcs = msg.get("tool_calls") or []
+
+        # Fallback for leaked <function=name>args</function> text format
+        # Always strip these tags from the content to prevent them from leaking into the UI
+        if msg.get("content"):
+            import re
+            import uuid
+            content = msg["content"]
+            pattern = r"<function=([^>]+)>(.*?)</function>"
+            
+            # If native tool calls are empty, we parse and use the leaked ones. 
+            # If they exist, we just clean the text.
+            native_tcs_exist = len(tcs) > 0
+            
+            for match in re.finditer(pattern, content, flags=re.DOTALL):
+                if not native_tcs_exist:
+                    fn_name = match.group(1)
+                    fn_args_str = match.group(2).strip()
+                    tcs.append({
+                        "id": f"call_{uuid.uuid4().hex[:8]}",
+                        "type": "function",
+                        "function": {
+                            "name": fn_name,
+                            "arguments": fn_args_str if fn_args_str else "{}"
+                        }
+                    })
+                content = content.replace(match.group(0), "").strip()
+                
+            # Also strip any malformed or unclosed function tags just in case
+            content = re.sub(r"<function[^>]*>.*?(?:</function>|$)", "", content, flags=re.DOTALL).strip()
+            
+            msg["content"] = content
+            if tcs and not msg.get("tool_calls"):
+                msg["tool_calls"] = tcs
         if not tcs:
             reply = (msg.get("content") or "").strip() or "I couldn't generate a response."
             _save_turn(db, user.id, "user", user_message)
