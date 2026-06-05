@@ -10,6 +10,7 @@ import InsightFeed from "../components/dashboard/InsightFeed";
 import SankeyChart from "../components/dashboard/SankeyChart";
 import CalendarHeatmap from "../components/dashboard/CalendarHeatmap";
 import CategoryBars from "../components/dashboard/CategoryBars";
+import PeerBenchmarkChart from "../components/dashboard/PeerBenchmarkChart";
 import WhatIfSimulator from "../components/dashboard/WhatIfSimulator";
 import AgentPanel from "../components/dashboard/AgentPanel";
 import ReportPreviewModal from "../components/dashboard/ReportPreviewModal";
@@ -178,6 +179,16 @@ export default function Dashboard() {
                 </p>
                 <CategoryBars categories={dash.categories} />
               </motion.div>
+
+              {dash.benchmarks && dash.benchmarks.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.3 }}
+                >
+                  <PeerBenchmarkChart benchmarks={dash.benchmarks} />
+                </motion.div>
+              )}
             </>
           )}
         </section>

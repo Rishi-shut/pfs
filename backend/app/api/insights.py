@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models import Insight as InsightModel, Transaction, User
 from app.schemas import InsightOut
+from app.detectors.benchmarks import detect_benchmarks
 
 router = APIRouter(prefix="/api", tags=["insights"])
 
@@ -82,10 +83,34 @@ def get_dashboard_data(session_id: str, db: Session = Depends(get_db)):
         for c, v in sorted_cats
     ]
 
+    # Benchmarks
+    tx_rows = [
+        {
+            "id": t.id,
+            "date": t.date,
+            "merchant": t.merchant_canonical or t.merchant_raw,
+            "amount": t.amount,
+            "category": t.category_canonical or t.category,
+        }
+        for t in txs
+    ]
+    benchmarks = detect_benchmarks(tx_rows)
+    benchmark_data = [
+        {
+            "category": b.category,
+            "user_spend": b.user_spend,
+            "benchmark_spend": b.benchmark_spend,
+            "percentage_above": b.percentage_above,
+            "demographic": b.demographic,
+        }
+        for b in benchmarks
+    ]
+
     return {
         "sankey": {"nodes": nodes, "links": links},
         "heatmap": heatmap,
         "categories": categories,
         "total_spend": round(total_expense, 2),
         "total_income": round(income, 2),
+        "benchmarks": benchmark_data,
     }

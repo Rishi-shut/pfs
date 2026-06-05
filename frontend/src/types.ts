@@ -38,6 +38,13 @@ export interface DashboardData {
   categories: CategoryTotal[];
   total_spend: number;
   total_income: number;
+  benchmarks?: {
+    category: string;
+    user_spend: number;
+    benchmark_spend: number;
+    percentage_above: number;
+    demographic: string;
+  }[];
 }
 
 export interface SimulateResult {
