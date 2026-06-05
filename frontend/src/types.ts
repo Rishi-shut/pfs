@@ -24,6 +24,7 @@ export interface SankeyData {
 export interface HeatmapPoint {
   date: string;
   amount: number;
+  events?: { type: 'payday' | 'subscription' | 'anomaly'; label: string }[];
 }
 
 export interface CategoryTotal {

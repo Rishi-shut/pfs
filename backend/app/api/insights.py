@@ -5,6 +5,7 @@ from app.db import get_db
 from app.models import Insight as InsightModel, Transaction, User
 from app.schemas import InsightOut
 from app.detectors.benchmarks import detect_benchmarks
+from app.pipeline.orchestrator import run_all_detectors
 
 router = APIRouter(prefix="/api", tags=["insights"])
 
@@ -66,12 +67,47 @@ def get_dashboard_data(session_id: str, db: Session = Depends(get_db)):
         for i, (_, v) in enumerate(sorted_cats)
     ]
 
-    # Heatmap: per-day totals
+    # Heatmap: per-day totals & events
     daily: dict[str, float] = {}
     for t in expenses:
         key = str(t.date)
         daily[key] = daily.get(key, 0) + float(t.amount)
-    heatmap = [{"date": d, "amount": round(v, 2)} for d, v in sorted(daily.items())]
+        
+    outputs = run_all_detectors(db, user.id)
+    events_by_date = {}
+    
+    # Payday events
+    cliff = outputs.get("cliff")
+    if cliff and getattr(cliff, "salary_day", None):
+        # Find the first date matching the salary_day in the current month bounds
+        for d_str in daily.keys():
+            if d_str.endswith(f"-{cliff.salary_day:02d}"):
+                events_by_date.setdefault(d_str, []).append({"type": "payday", "label": "Payday"})
+                break
+                
+    # Subscription events
+    for sub in outputs.get("subscriptions") or []:
+        for d in getattr(sub, "detected_dates", []):
+            events_by_date.setdefault(str(d), []).append({
+                "type": "subscription", 
+                "label": f"Subscription: {sub.canonical_merchant}"
+            })
+            
+    # Anomaly events
+    for anom in outputs.get("anomalies") or []:
+        events_by_date.setdefault(str(anom.date), []).append({
+            "type": "anomaly",
+            "label": f"Anomaly: {anom.merchant} (₹{int(anom.amount)})"
+        })
+
+    heatmap = [
+        {
+            "date": d, 
+            "amount": round(v, 2),
+            "events": events_by_date.get(d, [])
+        } 
+        for d, v in sorted(daily.items())
+    ]
 
     # Categories: ranked bars
     categories = [
