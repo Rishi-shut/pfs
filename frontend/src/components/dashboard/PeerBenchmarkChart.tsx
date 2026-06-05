@@ -50,8 +50,8 @@ export default function PeerBenchmarkChart({ benchmarks }: Props) {
               formatter={(value: number) => [`₹${value.toLocaleString()}`, undefined]}
             />
             <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "10px" }} />
-            <Bar dataKey="Your Spend" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={50} />
-            <Bar dataKey="Peer Average" fill="hsl(var(--muted))" radius={[4, 4, 0, 0]} maxBarSize={50} />
+            <Bar dataKey="Your Spend" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} maxBarSize={50} />
+            <Bar dataKey="Peer Average" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} maxBarSize={50} />
           </BarChart>
         </ResponsiveContainer>
       </div>
