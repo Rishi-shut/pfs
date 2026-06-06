@@ -9,6 +9,7 @@ import { Button } from "../components/ui/button";
 import InsightFeed from "../components/dashboard/InsightFeed";
 import SankeyChart from "../components/dashboard/SankeyChart";
 import CalendarHeatmap from "../components/dashboard/CalendarHeatmap";
+import EventHeatmap from "../components/dashboard/EventHeatmap";
 import CategoryBars from "../components/dashboard/CategoryBars";
 import PeerBenchmarkChart from "../components/dashboard/PeerBenchmarkChart";
 import WhatIfSimulator from "../components/dashboard/WhatIfSimulator";
@@ -160,11 +161,18 @@ export default function Dashboard() {
                 transition={{ duration: 0.4, delay: 0.1 }}
                 className="rounded-2xl border border-border bg-background p-5"
               >
-                <h3 className="font-display text-xl">Daily spend density</h3>
+                <h3 className="font-display text-xl">Daily Spend & Event Density</h3>
                 <p className="text-xs text-muted-foreground mt-0.5 mb-4">
-                  Darker = higher spend. Notice the payday cliff.
+                  Left: Spend intensity. Right: Subscriptions, Paydays, and Anomalies.
                 </p>
-                <CalendarHeatmap points={dash.heatmap} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <CalendarHeatmap points={dash.heatmap} />
+                  </div>
+                  <div>
+                    <EventHeatmap points={dash.heatmap} />
+                  </div>
+                </div>
               </motion.div>
 
               <motion.div

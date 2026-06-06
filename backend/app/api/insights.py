@@ -76,16 +76,27 @@ def get_dashboard_data(session_id: str, db: Session = Depends(get_db)):
     outputs = run_all_detectors(db, user.id)
     events_by_date = {}
     
-    # Payday events
+    # Fetch user's actual insights to sync the heatmap
+    user_insights = db.query(InsightModel).filter(InsightModel.user_id == user.id).all()
+    insight_tx_ids = set()
+    has_payday_insight = False
+    
+    for ins in user_insights:
+        if ins.rule_id == "impulse_anomaly" and ins.audit and "tx_id" in ins.audit:
+            insight_tx_ids.add(ins.audit["tx_id"])
+        if ins.rule_id == "payday_cliff":
+            has_payday_insight = True
+
+    # Payday events (only if it triggered a ranked insight)
     cliff = outputs.get("cliff")
-    if cliff and getattr(cliff, "salary_day", None):
+    if cliff and getattr(cliff, "salary_day", None) and has_payday_insight:
         # Find the first date matching the salary_day in the current month bounds
         for d_str in daily.keys():
             if d_str.endswith(f"-{cliff.salary_day:02d}"):
                 events_by_date.setdefault(d_str, []).append({"type": "payday", "label": "Payday"})
                 break
                 
-    # Subscription events
+    # Subscription events (show all, as recurring fixed costs are always useful on a timeline)
     for sub in outputs.get("subscriptions") or []:
         for d in getattr(sub, "detected_dates", []):
             events_by_date.setdefault(str(d), []).append({
@@ -93,12 +104,13 @@ def get_dashboard_data(session_id: str, db: Session = Depends(get_db)):
                 "label": f"Subscription: {sub.canonical_merchant}"
             })
             
-    # Anomaly events
+    # Anomaly events (strictly filtered to those that triggered a ranked insight)
     for anom in outputs.get("anomalies") or []:
-        events_by_date.setdefault(str(anom.date), []).append({
-            "type": "anomaly",
-            "label": f"Anomaly: {anom.merchant} (₹{int(anom.amount)})"
-        })
+        if anom.transaction_id in insight_tx_ids:
+            events_by_date.setdefault(str(anom.date), []).append({
+                "type": "anomaly",
+                "label": f"Anomaly: {anom.merchant} (₹{int(anom.amount)})"
+            })
 
     heatmap = [
         {

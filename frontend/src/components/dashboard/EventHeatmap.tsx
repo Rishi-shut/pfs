@@ -1,20 +1,20 @@
 import { useState } from "react";
 import type { HeatmapPoint } from "../../types";
-import { formatINR } from "../../lib/utils";
 
 const CELL = 16;
 const GAP = 3;
 
-function intensity(amount: number, max: number): number {
-  if (max <= 0) return 0;
-  return Math.min(1, amount / max);
+function getEventColor(events?: { type: string; label: string }[]) {
+  if (!events || events.length === 0) return "hsl(var(--muted))";
+  if (events.some((e) => e.type === "anomaly")) return "#ef4444"; // Red
+  if (events.some((e) => e.type === "payday")) return "#10b981"; // Green
+  if (events.some((e) => e.type === "subscription")) return "#3b82f6"; // Blue
+  return "hsl(var(--accent))";
 }
 
-export default function CalendarHeatmap({ points }: { points: HeatmapPoint[] }) {
+export default function EventHeatmap({ points }: { points: HeatmapPoint[] }) {
   const [hover, setHover] = useState<HeatmapPoint | null>(null);
-  if (!points.length) return <div className="text-xs text-muted-foreground">No daily data.</div>;
-
-  const max = Math.max(...points.map((p) => p.amount));
+  if (!points.length) return null;
 
   // Group by week (Mon-Sun)
   const byDate = new Map(points.map((p) => [p.date, p]));
@@ -41,7 +41,7 @@ export default function CalendarHeatmap({ points }: { points: HeatmapPoint[] }) 
   });
 
   return (
-    <div className="relative">
+    <div className="relative mt-2">
       <svg
         width={maxLen * (CELL + GAP)}
         height={7 * (CELL + GAP)}
@@ -50,7 +50,8 @@ export default function CalendarHeatmap({ points }: { points: HeatmapPoint[] }) 
         {cells.map((row, rowIdx) =>
           row.map((cell, colIdx) => {
             if (!cell) return null;
-            const op = intensity(cell.amount, max);
+            const fillColor = getEventColor(cell.events);
+            const hasEvent = cell.events && cell.events.length > 0;
             return (
               <rect
                 key={`${rowIdx}-${colIdx}`}
@@ -59,8 +60,8 @@ export default function CalendarHeatmap({ points }: { points: HeatmapPoint[] }) 
                 width={`${(1 / maxLen) * 90}%`}
                 height={CELL}
                 rx={2}
-                fill="hsl(var(--accent))"
-                fillOpacity={0.05 + op * 0.9}
+                fill={fillColor}
+                fillOpacity={hasEvent ? 1 : 0.3}
                 onMouseEnter={() => setHover(cell)}
                 onMouseLeave={() => setHover(null)}
                 className="cursor-pointer transition-all hover:stroke-foreground hover:stroke-1"
@@ -70,24 +71,29 @@ export default function CalendarHeatmap({ points }: { points: HeatmapPoint[] }) 
         )}
       </svg>
       <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground">
-        <span>{first.toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}</span>
-        <div className="flex items-center gap-1">
-          <span>Less</span>
-          {[0.1, 0.3, 0.6, 0.9].map((op) => (
-            <div
-              key={op}
-              className="h-2.5 w-2.5 rounded-sm"
-              style={{ background: `hsl(var(--accent) / ${op})` }}
-            />
-          ))}
-          <span>More</span>
+        <span />
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" /> Payday
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-sm bg-blue-500" /> Subscription
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-sm bg-red-500" /> Anomaly
+          </div>
         </div>
-        <span>{last.toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}</span>
       </div>
 
-      {hover && (
-        <div className="absolute top-0 right-0 -mt-8 rounded-md border border-border bg-background px-2 py-1 text-[10px] font-mono shadow-sm z-10">
-          {hover.date} · {formatINR(hover.amount)}
+      {hover && hover.events && hover.events.length > 0 && (
+        <div className="absolute top-0 right-0 -mt-8 rounded-md border border-border bg-background px-3 py-2 text-[10px] font-mono shadow-md z-10 max-w-[200px]">
+          <div className="font-semibold text-foreground mb-1">{hover.date}</div>
+          {hover.events.map((e, i) => (
+            <div key={i} className="text-muted-foreground truncate flex items-center gap-1 mt-0.5">
+              <span className={`w-1.5 h-1.5 rounded-full inline-block ${e.type === 'payday' ? 'bg-emerald-500' : e.type === 'anomaly' ? 'bg-red-500' : 'bg-blue-500'}`} />
+              {e.label}
+            </div>
+          ))}
         </div>
       )}
     </div>
